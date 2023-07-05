@@ -21,7 +21,7 @@ public class JdbcAccountDao implements AccountDao{
         if (username == null) throw new IllegalArgumentException("Username cannot be null");
         Account account = null;
         String sql = "select account_id, user_id, balance " +
-                "from account join user using(user_id) " +
+                "from account join users using(user_id) " +
                 "where username = ?";
         try {
             SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, username);
