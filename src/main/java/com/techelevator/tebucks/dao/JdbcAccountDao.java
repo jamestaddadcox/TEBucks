@@ -40,7 +40,7 @@ public class JdbcAccountDao implements AccountDao{
         Account account = null;
         String sql = "select account_id, user_id, balance " +
                 "from account " +
-                "where account_id = ?";
+                "where account_id = ?;";
         try {
             SqlRowSet rowSet = jdbcTemplate.queryForRowSet(sql, id);
             if (rowSet.next()) {
