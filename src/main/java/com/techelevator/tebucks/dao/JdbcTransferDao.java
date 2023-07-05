@@ -32,7 +32,7 @@ public class JdbcTransferDao implements TransferDao{
             throw new DaoException("Unable to connect to server or database", e);
         }
         return transfer;
-    };
+    }
 
     @Override
     public List<Transfer> getTransfersByAccount(int accountId) {
@@ -46,7 +46,7 @@ public class JdbcTransferDao implements TransferDao{
                 "on (user_id = from_user_id)" +
                 "where account_id = ?;";
         try {
-            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId);
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql, accountId, accountId);
             while (results.next()) {
                 Transfer transfer = mapRowToTransfer(results);
                 transferList.add(transfer);
@@ -55,14 +55,20 @@ public class JdbcTransferDao implements TransferDao{
             throw new DaoException("Unable to connect to server or database", e);
         }
         return transferList;
-    };
+    }
 
     @Override
-    public Transfer createTransfer(Transfer transfer) {
+    public Transfer createTransfer(NewTransferDto transferDto) {
         Transfer newTransfer = null;
         String sql = "insert into transfer (to_user_id, from_user_id, type, amount, status) values (?, ?, ?, ?, ?) returning transfer_id;";
+        String status = null;
+        if (transferDto.getType.equals("Send")) {
+            status = "Approved";
+        } else if (transferDto.getType.equals("Request")) {
+            status = "Pending";
+        }
         try {
-            int transferId = jdbcTemplate.queryForObject(sql, int.class, transfer.getToUserId(), transfer.getFromUserId(), transfer.getType(), transfer.getAmount(), transfer.getStatus());
+            int transferId = jdbcTemplate.queryForObject(sql, int.class, transferDto.getToUserId(), transferDto.getFromUserId(), transferDto.getTransferType(), transferDto.getAmount(), status);
             newTransfer = getTransferById(transferId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -70,33 +76,34 @@ public class JdbcTransferDao implements TransferDao{
             throw new DaoException("Data integrity violation", e);
         }
         return newTransfer;
-    };
+    }
 
     @Override
     public Transfer updateTransfer(Transfer transfer) {
         Transfer updatedTransfer = null;
         String sql = "update transfer set to_user_id = ?, from_user_id = ?, type = ?, amount = ?, status = ? where transfer_id = ?;";
         try {
-            int rowsAffected = jdbcTemplate.update(sql, transfer.getToUserId(), transfer.getFromUserId(), transfer.getType(), transfer.getAmount(), transfer.getStatus());
+            int rowsAffected = jdbcTemplate.update(sql, transfer.getToUserId(), transfer.getFromUserId(), transfer.getTransferType(), transfer.getAmount(), transfer.getTransferStatus());
             if (rowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             }
+            updatedTransfer = getTransferById(transfer.getTransferId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         } catch (DataIntegrityViolationException e) {
             throw new DaoException("Data integrity violation", e);
         }
         return updatedTransfer;
-    };
+    }
 
     private Transfer mapRowToTransfer(SqlRowSet rowSet) {
         Transfer transfer = new Transfer();
         transfer.setTransferId(rowSet.getInt("transfer_id"));
         transfer.setToUserId(rowSet.getInt("to_user_id"));
         transfer.setFromUserId(rowSet.getInt("from_user_id"));
-        transfer.setType(rowSet.getString("type"));
+        transfer.setTransferType(rowSet.getString("type"));
         transfer.setAmount(rowSet.getDouble("amount"));
-        transfer.setStatus(rowSet.getString("status"));
+        transfer.setTransferStatus(rowSet.getString("status"));
         return transfer;
     }
 
