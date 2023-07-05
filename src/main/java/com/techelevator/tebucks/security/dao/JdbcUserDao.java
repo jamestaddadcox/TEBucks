@@ -10,6 +10,9 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class JdbcUserDao implements UserDao {
 
@@ -72,6 +75,24 @@ public class JdbcUserDao implements UserDao {
         } catch (DataIntegrityViolationException e) {
             throw new DaoException("Data integrity violation", e);
         }
+    }
+
+    public List<User> getAllUsers() {
+        List<User> userList = new ArrayList<>();
+        String sql = "select user_id, username, password_hash, first_name, last_name, email from users;";
+        try {
+            SqlRowSet results = jdbcTemplate.queryForRowSet(sql);
+            while (results.next()) {
+                User user = mapRowToUser(results);
+                userList.add(user);
+            }
+        }catch (CannotGetJdbcConnectionException e) {
+                throw new DaoException("Unable to connect to server or database", e);
+        } catch (DataIntegrityViolationException e) {
+                throw new DaoException("Data integrity violation", e);
+        }
+            return userList;
+
     }
 
     private User mapRowToUser(SqlRowSet rs) {

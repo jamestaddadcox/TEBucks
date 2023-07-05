@@ -6,7 +6,7 @@ public interface TransferDao {
 
     List<Transfer> getTransfersByAccount(int accountId);
 
-    Transfer createTransfer(Transfer transfer);
+    Transfer createTransfer(NewTransferDto transferDto);
 
     Transfer updateTransfer(Transfer transfer);
 }
