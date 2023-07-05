@@ -1,6 +1,8 @@
 package com.techelevator.tebucks.dao;
 
 import com.techelevator.tebucks.exception.DaoException;
+import com.techelevator.tebucks.model.NewTransferDto;
+import com.techelevator.tebucks.model.Transfer;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,6 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class JdbcTransferDao implements TransferDao{
@@ -62,13 +65,13 @@ public class JdbcTransferDao implements TransferDao{
         Transfer newTransfer = null;
         String sql = "insert into transfer (to_user_id, from_user_id, type, amount, status) values (?, ?, ?, ?, ?) returning transfer_id;";
         String status = null;
-        if (transferDto.getType.equals("Send")) {
+        if (transferDto.getTransferType().equals("Send")) {
             status = "Approved";
-        } else if (transferDto.getType.equals("Request")) {
+        } else if (transferDto.getTransferType().equals("Request")) {
             status = "Pending";
         }
         try {
-            int transferId = jdbcTemplate.queryForObject(sql, int.class, transferDto.getToUserId(), transferDto.getFromUserId(), transferDto.getTransferType(), transferDto.getAmount(), status);
+            int transferId = jdbcTemplate.queryForObject(sql, int.class, transferDto.getUserTo(), transferDto.getUserFrom(), transferDto.getTransferType(), transferDto.getAmount(), status);
             newTransfer = getTransferById(transferId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -87,7 +90,7 @@ public class JdbcTransferDao implements TransferDao{
             if (rowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             }
-            updatedTransfer = getTransferById(transfer.getTransferId);
+            updatedTransfer = getTransferById(transfer.getTransferId());
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         } catch (DataIntegrityViolationException e) {
