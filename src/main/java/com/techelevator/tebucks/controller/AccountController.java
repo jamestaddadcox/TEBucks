@@ -1,7 +1,9 @@
-package com.techelevator.tebucks.security.controller;
+package com.techelevator.tebucks.controller;
 
 import com.techelevator.tebucks.dao.AccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
+import com.techelevator.tebucks.model.NewTransferDto;
+import com.techelevator.tebucks.model.Transfer;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
@@ -39,7 +41,7 @@ public class AccountController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping(path = "transfers")
 	public Transfer newTransfer(@Valid @RequestBody NewTransferDto newTransfer) {
-		transferDao.createTransfer(newTransfer);
+		return transferDao.createTransfer(newTransfer);
 	}
 
 
