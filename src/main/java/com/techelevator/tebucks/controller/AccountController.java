@@ -1,12 +1,14 @@
 package com.techelevator.tebucks.controller;
 
 import com.techelevator.tebucks.dao.AccountDao;
+import com.techelevator.tebucks.dao.JdbcAccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
 import com.techelevator.tebucks.model.NewTransferDto;
 import com.techelevator.tebucks.model.Transfer;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +26,12 @@ public class AccountController {
 	private final TransferDao transferDao;
 	private final UserDao userDao;
 
+	@Autowired
+	public AccountController (AccountDao accountDao, TransferDao transferDao, UserDao userDao) {
+		this.accountDao = accountDao;
+		this.transferDao = transferDao;
+		this.userDao = userDao;
+	}
 
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping(path = "users")

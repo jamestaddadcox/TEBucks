@@ -3,6 +3,7 @@ package com.techelevator.tebucks.dao;
 import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.Account;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
