@@ -1,16 +1,12 @@
 package com.techelevator.tebucks.controller;
 
+import com.techelevator.tebucks.client.services.LoggingService;
 import com.techelevator.tebucks.dao.AccountDao;
-import com.techelevator.tebucks.dao.JdbcAccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
-import com.techelevator.tebucks.model.Account;
-import com.techelevator.tebucks.model.NewTransferDto;
-import com.techelevator.tebucks.model.Transfer;
-import com.techelevator.tebucks.model.TransferStatusUpdateDto;
+import com.techelevator.tebucks.model.*;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +14,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
@@ -26,11 +21,14 @@ import java.util.List;
 @RestController
 public class AccountController {
 
+	private final JdbcUserDao userDao;
+	private final LoggingService loggingService;
 	private final AccountDao accountDao;
 	private final TransferDao transferDao;
 	private final UserDao userDao;
 
-	public AccountController (AccountDao accountDao, TransferDao transferDao, UserDao userDao) {
+	public AccountController (LoggingService loggingService, AccountDao accountDao, TransferDao transferDao, UserDao userDao) {
+		this.loggingService = loggingService;
 		this.accountDao = accountDao;
 		this.transferDao = transferDao;
 		this.userDao = userDao;
@@ -87,9 +85,36 @@ public class AccountController {
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping(path = "transfers")
 	public Transfer newTransfer(@Valid @RequestBody NewTransferDto newTransfer) {
+		User user = new User();
+		user = userDao.getUserById(newTransfer.getUserFrom());
 		if (newTransfer == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something went wrong with your transfer");
 		}
+
+		if (newTransfer.getAmount() > 1000) {
+			loggingService.logTransaction(makeTransferLoggable(newTransfer));
+			return transferDao.createTransfer(newTransfer);
+		}
+
+		if (newTransfer.getAmount() > 1000 && user.)
 		return transferDao.createTransfer(newTransfer);
+	}
+
+	public LogDto makeTransferLoggable(NewTransferDto newTransferDto) {
+		LogDto logDto = new LogDto();
+		User fromUser = new User();
+		fromUser = userDao.getUserById(newTransferDto.getUserFrom());
+		String fromUsername = fromUser.getUsername();
+		User toUser = new User();
+		toUser = userDao.getUserById(newTransferDto.getUserTo());
+		String toUsername = toUser.getUsername();
+
+
+		logDto.setDescription("Transfer is greater than $1000 by $" + (newTransferDto.getAmount() - 1000.00));
+		logDto.setUsernameFrom(fromUsername);
+		logDto.setUsername_to(toUsername);
+		logDto.setAmount(newTransferDto.getAmount());
+
+		return logDto;
 	}
 }
