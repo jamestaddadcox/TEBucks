@@ -40,7 +40,7 @@ CREATE TABLE transfer (
 
 COMMIT TRANSACTION;
 
-
+ROLLBACK
 
 -- Create users
 INSERT INTO users (username, password_hash)

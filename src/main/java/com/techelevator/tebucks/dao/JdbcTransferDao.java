@@ -63,7 +63,6 @@ public class JdbcTransferDao implements TransferDao{
 
     @Override
     public Transfer createTransfer(NewTransferDto transferDto) {
-        if (transferDto.getAmount() <= 0) throw new DaoException("Transfer Amount cannot be zero or negative.");
         Transfer newTransfer = null;
         String sql = "insert into transfer (to_user_id, from_user_id, type, amount, status) values (?, ?, ?, ?, ?) returning transfer_id;";
         String status = null;
