@@ -63,7 +63,6 @@ public class JdbcTransferDao implements TransferDao{
     @Override
     public Transfer createTransfer(NewTransferDto transferDto) {
         if (transferDto.getAmount() <= 0) throw new DaoException("Transfer Amount cannot be zero or negative.");
-        checkTransferAmount(transferDto);
         Transfer newTransfer = null;
         String sql = "insert into transfer (to_user_id, from_user_id, type, amount, status) values (?, ?, ?, ?, ?) returning transfer_id;";
         String status = null;
@@ -99,11 +98,6 @@ public class JdbcTransferDao implements TransferDao{
             throw new DaoException("Data integrity violation", e);
         }
         return updatedTransfer;
-    }
-
-    private boolean checkTransferAmount(NewTransferDto transferDto) {
-        String sql = "select balance from account where user_id = ?";
-
     }
 
     private Transfer mapRowToTransfer(SqlRowSet rowSet) {
