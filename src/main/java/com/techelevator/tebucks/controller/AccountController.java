@@ -1,24 +1,23 @@
 package com.techelevator.tebucks.controller;
 
 import com.techelevator.tebucks.dao.AccountDao;
-import com.techelevator.tebucks.dao.JdbcAccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
+import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.Account;
 import com.techelevator.tebucks.model.NewTransferDto;
 import com.techelevator.tebucks.model.Transfer;
 import com.techelevator.tebucks.model.TransferStatusUpdateDto;
-import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
@@ -84,10 +83,39 @@ public class AccountController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping(path = "transfers")
-	public Transfer newTransfer(@Valid @RequestBody NewTransferDto newTransfer) {
-		if (newTransfer == null) {
+	public Transfer newTransfer(@Valid @RequestBody NewTransferDto transferDto) {
+		if (transferDto == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something went wrong with your transfer");
 		}
-		return transferDao.createTransfer(newTransfer);
+
+		Transfer newTransfer = transferDao.createTransfer(transferDto);
+
+		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send")) {
+			transferTeBucks(newTransfer);
+		};
+
+		return newTransfer;
 	}
+
+	private boolean checkTransferAmount(NewTransferDto transferDto) {
+		if (transferDto.getAmount() <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer Amount cannot be zero or negative.");
+		}
+		if (transferDto.getAmount() > accountDao.getAccountById(transferDto.getUserFrom()).getBalance()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer amount exceeds account balance.");
+		}
+		if (transferDto.getUserFrom() == transferDto.getUserTo()) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer or request money from the same to and from accounts");
+		}
+		return true;
+	}
+
+	@ResponseStatus(HttpStatus.ACCEPTED)
+	private boolean transferTeBucks(Transfer transfer) {
+		double amount = transfer.getAmount();
+		accountDao.adjustBalance(amount, transfer.getToUserId());
+		accountDao.adjustBalance(-amount, transfer.getFromUserId());
+		return true;
+	}
+
 }

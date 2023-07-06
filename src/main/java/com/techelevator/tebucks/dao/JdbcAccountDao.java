@@ -4,6 +4,7 @@ import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.Account;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -53,6 +54,22 @@ public class JdbcAccountDao implements AccountDao{
         }
 
         return account;
+    }
+
+    @Override
+    public boolean adjustBalance(double newBalance, int userId) {
+        String sql = "update account set balance = ? where user_id = ?";
+        try {
+            int rowsAffected = jdbcTemplate.update(sql, newBalance, userId);
+            if (rowsAffected == 0) {
+                throw new DaoException("Zero rows affected, expected at least one");
+            }
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
+        return true;
     }
 
     private Account mapRowToAccount(SqlRowSet rowSet) {
