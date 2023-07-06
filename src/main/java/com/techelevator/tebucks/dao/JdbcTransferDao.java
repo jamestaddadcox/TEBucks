@@ -9,6 +9,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class JdbcTransferDao implements TransferDao{
             status = "Pending";
         }
         try {
-            int transferId = jdbcTemplate.queryForObject(sql, int.class, transferDto.getUserTo(), transferDto.getUserFrom(), transferDto.getTransferType(), transferDto.getAmount(), status);
+            int transferId = jdbcTemplate.queryForObject(sql, int.class, transferDto.getUserTo(), transferDto.getUserFrom(), transferDto.getTransferType(), BigDecimal.valueOf(transferDto.getAmount()), status);
             newTransfer = getTransferById(transferId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -87,7 +88,7 @@ public class JdbcTransferDao implements TransferDao{
         Transfer updatedTransfer = null;
         String sql = "update transfer set to_user_id = ?, from_user_id = ?, type = ?, amount = ?, status = ? where transfer_id = ?;";
         try {
-            int rowsAffected = jdbcTemplate.update(sql, transfer.getToUserId(), transfer.getFromUserId(), transfer.getTransferType(), transfer.getAmount(), transfer.getTransferStatus());
+            int rowsAffected = jdbcTemplate.update(sql, transfer.getToUserId(), transfer.getFromUserId(), transfer.getTransferType(),BigDecimal.valueOf(transfer.getAmount()), transfer.getTransferStatus(), transfer.getTransferId());
             if (rowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             }
