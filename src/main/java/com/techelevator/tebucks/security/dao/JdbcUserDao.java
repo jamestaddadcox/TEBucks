@@ -16,6 +16,7 @@ import java.util.List;
 @Component
 public class JdbcUserDao implements UserDao {
 
+    double USER_STARTING_BALANCE = 1000;
     private final JdbcTemplate jdbcTemplate;
 
     public JdbcUserDao(JdbcTemplate jdbcTemplate) {
@@ -68,7 +69,7 @@ public class JdbcUserDao implements UserDao {
             if (newUserId == null) {
                 throw new DaoException("Could not create user");
             }
-
+            newUserBalance(newUserId);
             return getUserById(newUserId);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
@@ -93,6 +94,17 @@ public class JdbcUserDao implements UserDao {
         }
             return userList;
 
+    }
+
+    private void newUserBalance(int userId) {
+        String sql = "insert into account (user_id, balance) values (?, ?);";
+        try {
+            jdbcTemplate.update(sql, userId, USER_STARTING_BALANCE);
+        } catch (CannotGetJdbcConnectionException e) {
+            throw new DaoException("Unable to connect to server or database", e);
+        } catch (DataIntegrityViolationException e) {
+            throw new DaoException("Data integrity violation", e);
+        }
     }
 
     private User mapRowToUser(SqlRowSet rs) {
