@@ -40,4 +40,34 @@ CREATE TABLE transfer (
 
 COMMIT TRANSACTION;
 
-ROLLBACK
+
+
+-- Create users
+INSERT INTO users (username, password_hash)
+VALUES ('user1', 'password1'),
+       ('user2', 'password2'),
+       ('user3', 'password3');
+
+-- Get user ids
+DO $$
+    DECLARE
+        user1_id INTEGER;
+        user2_id INTEGER;
+        user3_id INTEGER;
+    BEGIN
+        SELECT user_id INTO user1_id FROM users WHERE username = 'user1';
+        SELECT user_id INTO user2_id FROM users WHERE username = 'user2';
+        SELECT user_id INTO user3_id FROM users WHERE username = 'user3';
+
+        -- Create accounts
+        INSERT INTO account (user_id, balance)
+        VALUES (user1_id, 1000.0),
+               (user2_id, 2000.0),
+               (user3_id, 3000.0);
+
+        -- Create transfers
+        INSERT INTO transfer (to_user_id, from_user_id, type, amount, status)
+        VALUES (user2_id, user1_id, 'Send', 100.0, 'Approved'),
+               (user3_id, user1_id, 'Send', 200.0, 'Approved'),
+               (user1_id, user2_id, 'Request', 50.0, 'Pending');
+    END $$;
