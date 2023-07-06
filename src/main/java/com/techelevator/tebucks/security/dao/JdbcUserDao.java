@@ -10,6 +10,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,7 +100,7 @@ public class JdbcUserDao implements UserDao {
     private void newUserBalance(int userId) {
         String sql = "insert into account (user_id, balance) values (?, ?);";
         try {
-            jdbcTemplate.update(sql, userId, USER_STARTING_BALANCE);
+            jdbcTemplate.update(sql, userId, BigDecimal.valueOf(USER_STARTING_BALANCE));
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         } catch (DataIntegrityViolationException e) {
