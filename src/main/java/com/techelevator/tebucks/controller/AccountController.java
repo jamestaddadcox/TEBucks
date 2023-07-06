@@ -30,7 +30,6 @@ public class AccountController {
 	private final TransferDao transferDao;
 	private final UserDao userDao;
 
-	@Autowired
 	public AccountController (AccountDao accountDao, TransferDao transferDao, UserDao userDao) {
 		this.accountDao = accountDao;
 		this.transferDao = transferDao;
