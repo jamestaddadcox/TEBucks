@@ -1,8 +1,8 @@
 BEGIN TRANSACTION;
 
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS account;
 DROP TABLE IF EXISTS transfer;
+DROP TABLE IF EXISTS account;
+DROP TABLE IF EXISTS users;
 
 CREATE TABLE users (
 	user_id serial NOT NULL,
@@ -40,7 +40,7 @@ CREATE TABLE transfer (
 
 COMMIT TRANSACTION;
 
-
+ROLLBACK
 
 -- Create users
 INSERT INTO users (username, password_hash)
