@@ -90,8 +90,8 @@ public class Transfer {
         return transferStatus;
     }
 
-    public void setTransferStatus(String transferStatus) {
-        this.transferStatus = transferStatus;
+    public void setTransferStatus(String transferStatusUpdateDto) {
+        this.transferStatus = transferStatusUpdateDto;
     }
 
     @Override

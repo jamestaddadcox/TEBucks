@@ -79,6 +79,8 @@ public class AccountController {
 	@PutMapping(path = "transfers/{id}/status")
 	public Transfer updateTransferStatus(@PathVariable int id, TransferStatusUpdateDto newTransferStatus) {
 		Transfer transfer = transferDao.getTransferById(id);
+		String status = newTransferStatus.getTransferStatus();
+		transfer.setTransferStatus(status);
 		return transferDao.updateTransfer(transfer);
 	}
 
