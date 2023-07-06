@@ -79,6 +79,9 @@ public class AccountController {
 	public Transfer updateTransferStatus(@PathVariable int id, TransferStatusUpdateDto newTransferStatus) {
 		Transfer transfer = transferDao.getTransferById(id);
 		String status = newTransferStatus.getTransferStatus();
+		if (status.equals("Approved")) {
+			transferTeBucks(transfer);
+		}
 		transfer.setTransferStatus(status);
 		return transferDao.updateTransfer(transfer);
 	}
@@ -92,7 +95,7 @@ public class AccountController {
 
 		Transfer newTransfer = transferDao.createTransfer(transferDto);
 
-		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send")) {
+		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send"))) {
 			transferTeBucks(newTransfer);
 		};
 
