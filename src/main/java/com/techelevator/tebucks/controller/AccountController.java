@@ -79,7 +79,7 @@ public class AccountController {
 	}
 
 	@PutMapping(path = "transfers/{id}/status")
-	public Transfer updateTransferStatus(@PathVariable int id, TransferStatusUpdateDto newTransferStatus) {
+	public Transfer updateTransferStatus(@PathVariable int id, @RequestBody TransferStatusUpdateDto newTransferStatus) {
 		Transfer transfer = transferDao.getTransferById(id);
 		String status = newTransferStatus.getTransferStatus();
 		if (status.equals("Approved")) {
