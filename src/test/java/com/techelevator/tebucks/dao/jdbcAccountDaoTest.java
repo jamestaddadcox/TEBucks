@@ -8,6 +8,8 @@ import org.junit.Test;
 import org.springframework.data.annotation.Id;
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import java.math.BigDecimal;
+
 public class jdbcAccountDaoTest extends BaseDaoTests{
     protected static final Account ACCOUNT_1 = new Account(1, 3, 500 );
     protected static final Account ACCOUNT_2 = new Account(2, 2, 200 );
