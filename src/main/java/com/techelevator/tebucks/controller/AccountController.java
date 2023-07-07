@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.util.List;
 
@@ -95,10 +96,10 @@ public class AccountController {
 
 		Transfer newTransfer = transferDao.createTransfer(transferDto);
 
-		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send"))) {
+		if (checkTransferAmount(transferDto)) {
 			transferTeBucks(newTransfer);
 		};
-
+//  && (transferDto.getTransferType().equals("Send"))
 		return newTransfer;
 	}
 
@@ -106,7 +107,7 @@ public class AccountController {
 		if (transferDto.getAmount() <= 0) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer Amount cannot be zero or negative.");
 		}
-		if (transferDto.getAmount() > accountDao.getAccountById(transferDto.getUserFrom()).getBalance()) {
+		if (transferDto.getAmount() > accountDao.getAccountByUserId(transferDto.getUserFrom()).getBalance()) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer amount exceeds account balance.");
 		}
 		if (transferDto.getUserFrom() == transferDto.getUserTo()) {
@@ -115,7 +116,7 @@ public class AccountController {
 		return true;
 	}
 
-	@ResponseStatus(HttpStatus.ACCEPTED)
+//	@ResponseStatus(HttpStatus.ACCEPTED)
 	private boolean transferTeBucks(Transfer transfer) {
 		double amount = transfer.getAmount();
 		accountDao.adjustBalance(amount, transfer.getToUserId());
