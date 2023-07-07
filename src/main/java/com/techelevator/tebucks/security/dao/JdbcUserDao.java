@@ -100,7 +100,7 @@ public class JdbcUserDao implements UserDao {
     private void newUserBalance(int userId) {
         String sql = "insert into account (user_id, balance) values (?, ?);";
         try {
-            jdbcTemplate.update(sql, userId, BigDecimal.valueOf(USER_STARTING_BALANCE));
+            jdbcTemplate.update(sql, userId, USER_STARTING_BALANCE);
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         } catch (DataIntegrityViolationException e) {
