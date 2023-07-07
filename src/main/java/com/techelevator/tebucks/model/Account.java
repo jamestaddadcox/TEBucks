@@ -3,6 +3,7 @@ package com.techelevator.tebucks.model;
 import java.util.Objects;
 
 public class Account {
+
     private int accountId;
     private int userId;
     private double balance;
