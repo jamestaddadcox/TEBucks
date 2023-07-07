@@ -4,9 +4,7 @@ import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Positive;
 
 public class NewTransferDto {
-    @Positive
     private int userFrom;
-    @Positive
     private int userTo;
     private String transferType;
     @Positive

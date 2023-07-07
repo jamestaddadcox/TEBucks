@@ -4,6 +4,8 @@ import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.Account;
 import com.techelevator.tebucks.model.NewTransferDto;
 import com.techelevator.tebucks.model.Transfer;
+import com.techelevator.tebucks.security.dao.JdbcUserDao;
+import com.techelevator.tebucks.security.dao.UserDao;
 import net.minidev.json.writer.FakeMapper;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,12 +19,15 @@ public class jdbcTransferDaoTest extends BaseDaoTests{
     protected static final Transfer TRANSFER_1 = new Transfer(1, 2, 3, "Request", 250, "Pending", null, null);
     protected static final Transfer TRANSFER_2 = new Transfer(2, 1, 2, "Request", 400, "Pending", null, null);
 
+    private UserDao userDao;
     private JdbcTransferDao sut;
+
 
     @Before
     public void setup() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
-        sut = new JdbcTransferDao(jdbcTemplate);
+        userDao = new JdbcUserDao(jdbcTemplate);
+        sut = new JdbcTransferDao(jdbcTemplate, userDao);
     }
 
     @Test
