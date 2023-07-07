@@ -8,6 +8,8 @@ public interface AccountDao {
 
     Account getAccountById(int id);
 
+    Account getAccountByUserId(int id);
+
     boolean adjustBalance(double newBalance, int userId);
 
 

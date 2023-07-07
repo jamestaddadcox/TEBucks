@@ -3,6 +3,7 @@ package com.techelevator.tebucks.dao;
 import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.NewTransferDto;
 import com.techelevator.tebucks.model.Transfer;
+import com.techelevator.tebucks.security.dao.UserDao;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -17,9 +18,11 @@ import java.util.List;
 public class JdbcTransferDao implements TransferDao{
 
     private final JdbcTemplate jdbcTemplate;
+    private final UserDao userDao;
 
-    public JdbcTransferDao(JdbcTemplate jdbcTemplate) {
+    public JdbcTransferDao(JdbcTemplate jdbcTemplate, UserDao userDao) {
         this.jdbcTemplate = jdbcTemplate;
+        this.userDao = userDao;
     }
 
     @Override
@@ -35,6 +38,7 @@ public class JdbcTransferDao implements TransferDao{
         } catch (CannotGetJdbcConnectionException e) {
             throw new DaoException("Unable to connect to server or database", e);
         }
+
         return transfer;
     }
 
@@ -108,6 +112,8 @@ public class JdbcTransferDao implements TransferDao{
         transfer.setTransferType(rowSet.getString("type"));
         transfer.setAmount(rowSet.getDouble("amount"));
         transfer.setTransferStatus(rowSet.getString("status"));
+        transfer.setUserTo(userDao.getUserById(transfer.getToUserId()));
+        transfer.setUserFrom(userDao.getUserById(transfer.getFromUserId()));
         return transfer;
     }
 

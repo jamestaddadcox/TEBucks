@@ -3,20 +3,17 @@ package com.techelevator.tebucks.controller;
 import com.techelevator.tebucks.client.services.LoggingService;
 import com.techelevator.tebucks.dao.AccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
-import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.*;
 import com.techelevator.tebucks.security.dao.JdbcUserDao;
-import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.validation.Valid;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.List;
 
 @PreAuthorize("isAuthenticated()")
@@ -38,14 +35,20 @@ public class AccountController {
 	}
 
 	@GetMapping(path = "users")
-	public List<User> showAllUsers () {
-		List<User> users = userDao.getAllUsers();
-
-		if (users == null) {
+	public List<User> showAllUsers (Principal principal) {
+		List<User> allUsers = userDao.getAllUsers();
+		if (allUsers == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Users could not be found");
-		} else {
-			return users;
 		}
+		List<User> users = new ArrayList<>();
+		for (User user : allUsers) {
+			if (!(user.getUsername().equals(principal.getName()))) {
+				users.add(user);
+			}
+		}
+
+			return users;
+
 	}
 
 	@GetMapping(path = "account/balance")
@@ -55,12 +58,13 @@ public class AccountController {
 
 		if (account == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User balance could not be found");
-		} else {
-			return account;
 		}
+
+		return account;
+
 	}
 
-	@GetMapping(path = "account/transfers/")
+	@GetMapping(path = "account/transfers")
 	public List<Transfer> showTransfers(Principal principal) {
 		String username = principal.getName();
 		Account account = accountDao.getAccountByUsername(username);
@@ -78,7 +82,7 @@ public class AccountController {
 	}
 
 	@PutMapping(path = "transfers/{id}/status")
-	public Transfer updateTransferStatus(@PathVariable int id, TransferStatusUpdateDto newTransferStatus) {
+	public Transfer updateTransferStatus(@PathVariable int id, @RequestBody TransferStatusUpdateDto newTransferStatus) {
 		Transfer transfer = transferDao.getTransferById(id);
 		String status = newTransferStatus.getTransferStatus();
 		if (status.equals("Approved")) {
@@ -90,17 +94,22 @@ public class AccountController {
 
 	@ResponseStatus(HttpStatus.CREATED)
 	@PostMapping(path = "transfers")
-	public Transfer newTransfer(@Valid @RequestBody NewTransferDto transferDto) {
+	public Transfer newTransfer(@Valid @RequestBody NewTransferDto transferDto, Principal principal) {
 		if (transferDto == null) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Something went wrong with your transfer");
 		}
-
+		User user = userDao.getUserByUsername(principal.getName());
+		if (transferDto.getTransferType().equals("Send")) {
+			transferDto.setUserFrom(user.getId());
+		} else if (transferDto.getTransferType().equals("Request")) {
+			transferDto.setUserTo(user.getId());
+		}
 		Transfer newTransfer = transferDao.createTransfer(transferDto);
 
 		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send"))) {
 			transferTeBucks(newTransfer);
 		};
-
+//
 		return newTransfer;
 	}
 
@@ -110,7 +119,7 @@ public class AccountController {
 			loggingService.logTransaction(makeTransferLoggable(transferDto));
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer Amount cannot be zero or negative.");
 		}
-		if (transferDto.getAmount() > accountDao.getAccountById(transferDto.getUserFrom()).getBalance()) {
+		if (transferDto.getAmount() > accountDao.getAccountByUserId(transferDto.getUserFrom()).getBalance()) {
 			logDescription = "Transfer will exceed balance by $" + (transferDto.getAmount() - accountDao.getAccountById(transferDto.getUserFrom()).getBalance());
 			loggingService.logTransaction(makeTransferLoggable(transferDto));
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer amount exceeds account balance.");
@@ -123,7 +132,7 @@ public class AccountController {
 		return true;
 	}
 
-	@ResponseStatus(HttpStatus.ACCEPTED)
+//	@ResponseStatus(HttpStatus.ACCEPTED)
 	private boolean transferTeBucks(Transfer transfer) {
 		double amount = transfer.getAmount();
 		accountDao.adjustBalance(amount, transfer.getToUserId());
