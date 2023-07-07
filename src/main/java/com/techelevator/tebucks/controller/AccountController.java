@@ -98,10 +98,10 @@ public class AccountController {
 
 		Transfer newTransfer = transferDao.createTransfer(transferDto);
 
-		if (checkTransferAmount(transferDto)) {
+		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send"))) {
 			transferTeBucks(newTransfer);
 		};
-//  && (transferDto.getTransferType().equals("Send"))
+//
 		return newTransfer;
 	}
 
