@@ -5,6 +5,7 @@ import com.techelevator.tebucks.dao.AccountDao;
 import com.techelevator.tebucks.dao.TransferDao;
 import com.techelevator.tebucks.exception.DaoException;
 import com.techelevator.tebucks.model.*;
+import com.techelevator.tebucks.security.dao.JdbcUserDao;
 import com.techelevator.tebucks.security.dao.UserDao;
 import com.techelevator.tebucks.security.model.User;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -27,9 +28,9 @@ public class AccountController {
 	private final LoggingService loggingService;
 	private final AccountDao accountDao;
 	private final TransferDao transferDao;
-	private final UserDao userDao;
+	String logDescription = null;
 
-	public AccountController (LoggingService loggingService, AccountDao accountDao, TransferDao transferDao, UserDao userDao) {
+	public AccountController (LoggingService loggingService, AccountDao accountDao, TransferDao transferDao, JdbcUserDao userDao) {
 		this.loggingService = loggingService;
 		this.accountDao = accountDao;
 		this.transferDao = transferDao;
@@ -105,12 +106,18 @@ public class AccountController {
 
 	private boolean checkTransferAmount(NewTransferDto transferDto) {
 		if (transferDto.getAmount() <= 0) {
+			logDescription = "Transfer must be over $0";
+			loggingService.logTransaction(makeTransferLoggable(transferDto));
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer Amount cannot be zero or negative.");
 		}
 		if (transferDto.getAmount() > accountDao.getAccountById(transferDto.getUserFrom()).getBalance()) {
+			logDescription = "Transfer will exceed balance by $" + (transferDto.getAmount() - accountDao.getAccountById(transferDto.getUserFrom()).getBalance());
+			loggingService.logTransaction(makeTransferLoggable(transferDto));
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Transfer amount exceeds account balance.");
 		}
 		if (transferDto.getUserFrom() == transferDto.getUserTo()) {
+			logDescription = "User tried transferring money to themself";
+			loggingService.logTransaction(makeTransferLoggable(transferDto));
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot transfer or request money from the same to and from accounts");
 		}
 		return true;
@@ -133,8 +140,7 @@ public class AccountController {
 		toUser = userDao.getUserById(newTransferDto.getUserTo());
 		String toUsername = toUser.getUsername();
 
-
-		logDto.setDescription("Transfer is greater than $1000 by $" + (newTransferDto.getAmount() - 1000.00));
+		logDto.setDescription(logDescription);
 		logDto.setUsernameFrom(fromUsername);
 		logDto.setUsername_to(toUsername);
 		logDto.setAmount(newTransferDto.getAmount());
