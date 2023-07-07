@@ -71,9 +71,10 @@ public class AccountController {
 
 		if (account == null) {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Transfers for this account could not be found");
-		} else {
-			return transferDao.getTransfersByAccount(account.getAccountId());
 		}
+
+		return transferDao.getTransfersByAccount(account.getAccountId());
+
 	}
 
 	@GetMapping(path = "transfers/{id}")
@@ -104,11 +105,12 @@ public class AccountController {
 		} else if (transferDto.getTransferType().equals("Request")) {
 			transferDto.setUserTo(user.getId());
 		}
-		Transfer newTransfer = transferDao.createTransfer(transferDto);
+		Transfer newTransfer = null;
 
 		if (checkTransferAmount(transferDto) && (transferDto.getTransferType().equals("Send"))) {
+			newTransfer = transferDao.createTransfer(transferDto);
 			transferTeBucks(newTransfer);
-		};
+		}
 //
 		return newTransfer;
 	}

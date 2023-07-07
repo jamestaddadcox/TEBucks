@@ -78,8 +78,9 @@ public class JdbcAccountDao implements AccountDao{
     public boolean adjustBalance(double amount, int userId) {
 //        BigDecimal newBalance = ;
         String sql = "update account set balance = ? where user_id = ?";
+        double finalAmount = getAccountByUserId(userId).getBalance() + amount;
         try {
-            int rowsAffected = jdbcTemplate.update(sql, BigDecimal.valueOf(getAccountByUserId(userId).getBalance()).add(BigDecimal.valueOf(amount)), userId);
+            int rowsAffected = jdbcTemplate.update(sql, finalAmount, userId);
             if (rowsAffected == 0) {
                 throw new DaoException("Zero rows affected, expected at least one");
             }
