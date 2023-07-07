@@ -18,7 +18,7 @@ CREATE TABLE users (
 CREATE TABLE account (
     account_id serial NOT NULL,
     user_id serial NOT NULL,
-    balance money NOT NULL,
+    balance float8 NOT NULL,
     CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES users (user_id),
     CONSTRAINT pk_account_id PRIMARY KEY (account_id)
 );
@@ -27,7 +27,7 @@ CREATE TABLE transfer (
     to_user_id int NOT NULL,
     from_user_id int NOT NULL,
     type VARCHAR(50) NOT NULL,
-    amount money NOT NULL,
+    amount float8 NOT NULL,
     status VARCHAR(50),
     CONSTRAINT pk_transfer_id PRIMARY KEY (transfer_id),
     CONSTRAINT fk_to_user_id FOREIGN KEY (to_user_id) REFERENCES users (user_id),

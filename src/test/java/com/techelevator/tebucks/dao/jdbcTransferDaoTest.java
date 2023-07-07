@@ -73,5 +73,4 @@ public class jdbcTransferDaoTest extends BaseDaoTests{
         Transfer transfer = sut.updateTransfer(new Transfer(1, 2, 9998, "Request", 250, "Pending", null, null));
 
     }
-
 }
