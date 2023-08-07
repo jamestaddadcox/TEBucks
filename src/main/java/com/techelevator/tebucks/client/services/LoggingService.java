@@ -65,5 +65,4 @@ public class LoggingService {
 		return new HttpEntity<>(log, headers);
 	}
 
-
 }

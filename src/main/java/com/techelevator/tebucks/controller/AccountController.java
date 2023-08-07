@@ -134,7 +134,7 @@ public class AccountController {
 		return true;
 	}
 
-//	@ResponseStatus(HttpStatus.ACCEPTED)
+	@ResponseStatus(HttpStatus.ACCEPTED)
 	private boolean transferTeBucks(Transfer transfer) {
 		double amount = transfer.getAmount();
 		accountDao.adjustBalance(amount, transfer.getToUserId());
@@ -158,5 +158,4 @@ public class AccountController {
 
 		return logDto;
 	}
-
 }
